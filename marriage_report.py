@@ -1,28 +1,32 @@
 import sqlite3
 import pandas as pd
 
-# Connect to the social_network database
-con = sqlite3.connect('social_network.db')
+# Connect to the database
+con = sqlite3.connect('social_network.db')  # Replace with your actual database file
 curs = con.cursor()
 
-# SQL query to get all married couples (relationship type is 'spouse')
-married_couples_query = """
-SELECT person1.name AS person1_name, person2.name AS person2_name, start_date
-FROM relationships
-JOIN people person1 ON person1_id = person1.id
-JOIN people person2 ON person2_id = person2.id
-WHERE type = 'spouse';
+# Execute the SQL query to get a list of all married couples
+relationships_table_query = """
+SELECT p1.name AS person1_name, p2.name AS person2_name, r.start_date
+FROM relationships r
+JOIN people p1 ON r.person1_id = p1.id
+JOIN people p2 ON r.person2_id = p2.id
+WHERE type = 'spouse'
 """
 
-# Execute the query and get all results
-curs.execute(married_couples_query)
-married_couples = curs.fetchall()
+curs.execute(relationships_table_query)
 
-# Close the connection
-con.close()
+# Fetch all results from the executed query
+results = curs.fetchall()
+
+# Define the column names
+columns = ['person1_name', 'person2_name', 'start_date']
 
 # Convert the query results to a pandas DataFrame
-married_couples_df = pd.DataFrame(married_couples, columns=['Person 1', 'Person 2', 'Start Date'])
+df = pd.DataFrame(results, columns=columns)
 
-# Generate a CSV file containing names and relationship start date of all married couples
-married_couples_df.to_csv('married_couples.csv', index=False)
+# Generate a CSV file from the DataFrame
+df.to_csv('married_couples_report.csv', index=False)
+
+# Close the database connection
+con.close()
